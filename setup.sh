@@ -3,6 +3,13 @@
 # Kill any existing tmux server
 tmux kill-server 2>/dev/null
 
+# Configure tmux to keep window names
+echo "set -g automatic-rename off" >> ~/.tmux.conf
+echo "set -g allow-rename off" >> ~/.tmux.conf
+
+# Configure Ctrl+b w to show all sessions with windows in tree view
+echo "bind-key w choose-tree -s" >> ~/.tmux.conf
+
 tmux new-session -d -s "installers" -n "Main"
 
 # Pane 1: Update and upgrade
@@ -19,6 +26,15 @@ tmux send-keys -t "installers:Main.2" "echo '=== Installing opencode ===' && npm
 # Split and create Pane 4: Install btop
 tmux split-window -v -t "installers:Main.1"
 tmux send-keys -t "installers:Main.3" "echo '=== Installing btop ===' && sudo apt-get install -y btop" C-m
+
+# Split and create Pane 5: Install fastfetch
+tmux split-window -v -t "installers:Main.2"
+tmux send-keys -t "installers:Main.4" "echo '=== Installing fastfetch ===' && sudo apt-get install -y fastfetch" C-m
+
+# Add fastfetch to bashrc to run on shell startup
+if ! grep -q "fastfetch" ~/.bashrc; then
+  echo "fastfetch" >> ~/.bashrc
+fi
 
 # Create GH Auth window
 tmux new-window -t "installers" -n "GH-Auth"
