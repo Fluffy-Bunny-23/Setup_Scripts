@@ -1,0 +1,16 @@
+[
+  {
+    "git_url": "https://github.com/fluffy-bunny-23/wisher",
+    "name": "wisher",
+    "folder_name": "wisher",
+    "short_name": "wish",
+    "server_cmd": "python app.py 7050"
+  },
+  {
+    "git_url": "https://github.com/lazypanda5050/Latin-Flashcard-Trainer",
+    "name": "Latin-Flashcard-Trainer",
+    "folder_name": "latin-flashcard-trainer",
+    "short_name": "latin",
+    "server_cmd": "python -m http.server 7050"
+  }
+]
