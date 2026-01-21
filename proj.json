@@ -1,9 +1,9 @@
 [
   {
     "git_url": "https://github.com/fluffy-bunny-23/wisher",
-    "name": "wisher",
-    "folder_name": "wisher",
-    "short_name": "wish",
+    "name": "Wisher",
+    "folder_name": "Wisher",
+    "short_name": "Wish",
     "server_cmd": "python app.py 7050"
   },
   {

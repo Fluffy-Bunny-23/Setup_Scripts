@@ -37,6 +37,13 @@ jq -c '.[]' proj.json | while read -r project; do
   # Clone repo if not exists in proj directory
   if [ ! -d "proj/$folder_name" ]; then
     git clone "$git_url" "proj/$folder_name"
+  else
+    # Check for uncommitted changes and pull if clean
+    cd "proj/$folder_name"
+    if [ -z "$(git status --porcelain)" ]; then
+      git pull
+    fi
+    cd - > /dev/null
   fi
 
   # Create session
