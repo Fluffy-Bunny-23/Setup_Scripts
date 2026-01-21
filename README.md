@@ -1,6 +1,6 @@
 # Development Environment Setup
 
-Automated script to set up a development environment with tmux sessions for multiple projects.
+Automated script to set up a development environment with tmux sessions for multiple projects. Built specifically for Google Cloud Shell.
 
 ## Usage
 
