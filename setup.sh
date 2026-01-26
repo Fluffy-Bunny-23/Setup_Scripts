@@ -44,10 +44,6 @@ fi
 tmux new-window -t "installers" -n "GH-Auth"
 tmux send-keys -t "installers:GH-Auth" "if gh auth status &> /dev/null; then echo '=== GitHub already authenticated ==='; else echo '=== GitHub Authentication ===' && gh auth login; fi && echo 'DONE_GH_AUTH' && sleep 2" C-m
 
-# Create a monitoring window that will wait for all installations to complete and then kill the session
-tmux new-window -t "installers" -n "Monitor"
-tmux send-keys -t "installers:Monitor" "echo 'Waiting for all installations to complete...'; while true; do if tmux capture-pane -t installers:Main.0 -p | grep -q 'DONE_UPDATE' && tmux capture-pane -t installers:Main.1 -p | grep -q 'DONE_LAZYGIT' && tmux capture-pane -t installers:Main.2 -p | grep -q 'DONE_OPENCODE' && tmux capture-pane -t installers:Main.3 -p | grep -q 'DONE_BTOP' && tmux capture-pane -t installers:Main.4 -p | grep -q 'DONE_FASTFETCH' && tmux capture-pane -t installers:GH-Auth -p | grep -q 'DONE_GH_AUTH'; then echo 'All installations complete! Switching to general session...'; sleep 3; tmux switch-client -t general; sleep 1; tmux kill-session -t installers; break; fi; sleep 2; done" C-m
-
 # Create proj directory if not exists
 mkdir -p proj
 
@@ -93,7 +89,7 @@ jq -c '.[]' proj.json | while read -r project; do
   tmux send-keys -t "$short_name:Bash" "cd proj/$folder_name" C-m
 done
 
-# Create general session
+# Create general session (before monitor to ensure it exists)
 tmux new-session -d -s "general" -n "0"
 tmux send-keys -t "general:0" "btop" C-m
 
@@ -110,6 +106,27 @@ tmux new-window -t "general" -n "BASHa"
 
 # BASHb window
 tmux new-window -t "general" -n "BASHb"
+
+# Create a monitoring window that will wait for all installations to complete and then kill the session
+tmux new-window -t "installers" -n "Monitor"
+tmux send-keys -t "installers:Monitor" "\
+echo 'Waiting for all installations to complete...'; \
+while true; do \
+  if tmux capture-pane -t installers:Main.0 -p | grep -q 'DONE_UPDATE' && \
+     tmux capture-pane -t installers:Main.1 -p | grep -q 'DONE_LAZYGIT' && \
+     tmux capture-pane -t installers:Main.2 -p | grep -q 'DONE_OPENCODE' && \
+     tmux capture-pane -t installers:Main.3 -p | grep -q 'DONE_BTOP' && \
+     tmux capture-pane -t installers:Main.4 -p | grep -q 'DONE_FASTFETCH' && \
+     tmux capture-pane -t installers:GH-Auth -p | grep -q 'DONE_GH_AUTH'; then \
+    echo 'All installations complete! Switching to general session in 3 seconds...'; \
+    sleep 3; \
+    tmux switch-client -t general 2>/dev/null || true; \
+    sleep 1; \
+    tmux kill-session -t installers; \
+    break; \
+  fi; \
+  sleep 3; \
+done" C-m
 
 # Attach to the installers session
 tmux attach-session -t "installers"
