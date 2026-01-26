@@ -6,7 +6,6 @@ tmux kill-server 2>/dev/null
 # Configure tmux to keep window names (only if not already configured)
 if [ ! -f ~/.tmux.conf ] || ! grep -q "automatic-rename off" ~/.tmux.conf; then
   echo "set -g automatic-rename off" >> ~/.tmux.conf
-  echo "set -g allow-rename off" >> ~/.tmux.conf
 fi
 
 # Configure Ctrl+b w to show all sessions with windows in tree view (only if not already configured)
