@@ -69,16 +69,16 @@ jq -c '.[]' proj.json | while read -r project; do
   # Create session
   tmux new-session -d -s "$short_name" -n "OCa"
 
-  # OCa pane - opencode
-  tmux send-keys -t "$short_name:OCa" "cd proj/$folder_name && opencode" C-m
+  # OCa pane - opencode (wait for installation to complete)
+  tmux send-keys -t "$short_name:OCa" "cd proj/$folder_name && while ! command -v opencode &> /dev/null; do echo 'Waiting for opencode to install...'; sleep 3; done && opencode" C-m
 
-  # OCb window - opencode
+  # OCb window - opencode (wait for installation to complete)
   tmux new-window -t "$short_name" -n "OCb"
-  tmux send-keys -t "$short_name:OCb" "cd proj/$folder_name && opencode" C-m
+  tmux send-keys -t "$short_name:OCb" "cd proj/$folder_name && while ! command -v opencode &> /dev/null; do echo 'Waiting for opencode to install...'; sleep 3; done && opencode" C-m
 
-  # LG window - lazygit
+  # LG window - lazygit (wait for installation to complete)
   tmux new-window -t "$short_name" -n "LG"
-  tmux send-keys -t "$short_name:LG" "cd proj/$folder_name && lazygit" C-m
+  tmux send-keys -t "$short_name:LG" "cd proj/$folder_name && while ! command -v lazygit &> /dev/null; do echo 'Waiting for lazygit to install...'; sleep 3; done && lazygit" C-m
 
   # Serv window
   tmux new-window -t "$short_name" -n "Serv"
@@ -91,15 +91,15 @@ done
 
 # Create general session (before monitor to ensure it exists)
 tmux new-session -d -s "general" -n "0"
-tmux send-keys -t "general:0" "btop" C-m
+tmux send-keys -t "general:0" "while ! command -v btop &> /dev/null; do echo 'Waiting for btop to install...'; sleep 3; done && btop" C-m
 
-# OCa window - opencode
+# OCa window - opencode (wait for installation to complete)
 tmux new-window -t "general" -n "OCa"
-tmux send-keys -t "general:OCa" "opencode" C-m
+tmux send-keys -t "general:OCa" "while ! command -v opencode &> /dev/null; do echo 'Waiting for opencode to install...'; sleep 3; done && opencode" C-m
 
-# OCb window - opencode
+# OCb window - opencode (wait for installation to complete)
 tmux new-window -t "general" -n "OCb"
-tmux send-keys -t "general:OCb" "opencode" C-m
+tmux send-keys -t "general:OCb" "while ! command -v opencode &> /dev/null; do echo 'Waiting for opencode to install...'; sleep 3; done && opencode" C-m
 
 # BASHa window
 tmux new-window -t "general" -n "BASHa"
@@ -130,5 +130,5 @@ while true; do \
   sleep 3; \
 done" C-m
 
-# Attach to the installers session
-tmux attach-session -t "installers"
+# Attach to the general session (top window) so user can see it while installations proceed
+tmux attach-session -t "general:0"
