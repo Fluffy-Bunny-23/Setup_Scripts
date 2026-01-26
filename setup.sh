@@ -120,9 +120,11 @@ while true; do \
      tmux capture-pane -t installers:GH-Auth -p | grep -q 'DONE_GH_AUTH'; then \
     echo 'All installations complete! Switching to general session in 3 seconds...'; \
     sleep 3; \
-    tmux switch-client -t general 2>/dev/null || true; \
-    sleep 1; \
-    tmux kill-session -t installers; \
+    if tmux has-session -t general 2>/dev/null; then \
+      tmux switch-client -t general 2>/dev/null || true; \
+      sleep 1; \
+      tmux run-shell -b 'sleep 1; tmux kill-session -t installers 2>/dev/null'; \
+    fi; \
     break; \
   fi; \
   sleep 3; \
