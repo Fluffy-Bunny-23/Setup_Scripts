@@ -3,33 +3,36 @@
 # Kill any existing tmux server
 tmux kill-server 2>/dev/null
 
-# Configure tmux to keep window names
-echo "set -g automatic-rename off" >> ~/.tmux.conf
-echo "set -g allow-rename off" >> ~/.tmux.conf
+# Configure tmux to keep window names (only if not already configured)
+if [ ! -f ~/.tmux.conf ] || ! grep -q "automatic-rename off" ~/.tmux.conf; then
+  echo "set -g automatic-rename off" >> ~/.tmux.conf
+fi
 
-# Configure Ctrl+b w to show all sessions with windows in tree view
-echo "bind-key w choose-tree -s" >> ~/.tmux.conf
+# Configure Ctrl+b w to show all sessions with windows in tree view (only if not already configured)
+if [ ! -f ~/.tmux.conf ] || ! grep -q "bind-key w choose-tree" ~/.tmux.conf; then
+  echo "bind-key w choose-tree -s" >> ~/.tmux.conf
+fi
 
 tmux new-session -d -s "installers" -n "Main"
 
 # Pane 1: Update and upgrade
-tmux send-keys -t "installers:Main.0" "echo '=== Updating system ===' && sudo apt-get update && sudo apt-get upgrade -y" C-m
+tmux send-keys -t "installers:Main.0" "echo '=== Updating system ===' && sudo apt-get update && sudo apt-get upgrade -y && echo 'DONE_UPDATE' && sleep 2" C-m
 
 # Split and create Pane 2: Install lazygit
 tmux split-window -h -t "installers:Main"
-tmux send-keys -t "installers:Main.1" "echo '=== Installing lazygit ===' && LAZYGIT_VERSION=\$(curl -s 'https://api.github.com/repos/jesseduffield/lazygit/releases/latest' | grep -Po '\"tag_name\": *\"v\\K[^\"]*') && curl -Lo lazygit.tar.gz \"https://github.com/jesseduffield/lazygit/releases/download/v\${LAZYGIT_VERSION}/lazygit_\${LAZYGIT_VERSION}_Linux_x86_64.tar.gz\" && tar xf lazygit.tar.gz lazygit && sudo install lazygit -D -t /usr/local/bin/ && rm lazygit.tar.gz lazygit" C-m
+tmux send-keys -t "installers:Main.1" "if command -v lazygit &> /dev/null; then echo '=== lazygit already installed ==='; else echo '=== Installing lazygit ===' && LAZYGIT_VERSION=\$(curl -s 'https://api.github.com/repos/jesseduffield/lazygit/releases/latest' | grep -Po '\"tag_name\": *\"v\\K[^\"]*') && curl -Lo lazygit.tar.gz \"https://github.com/jesseduffield/lazygit/releases/download/v\${LAZYGIT_VERSION}/lazygit_\${LAZYGIT_VERSION}_Linux_x86_64.tar.gz\" && tar xf lazygit.tar.gz lazygit && sudo install lazygit -D -t /usr/local/bin/ && rm lazygit.tar.gz lazygit; fi && echo 'DONE_LAZYGIT' && sleep 2" C-m
 
 # Split and create Pane 3: Install opencode
 tmux split-window -v -t "installers:Main.0"
-tmux send-keys -t "installers:Main.2" "echo '=== Installing opencode ===' && npm install -g opencode-ai" C-m
+tmux send-keys -t "installers:Main.2" "if command -v opencode &> /dev/null; then echo '=== opencode already installed ==='; else echo '=== Installing opencode ===' && npm install -g opencode-ai; fi && echo 'DONE_OPENCODE' && sleep 2" C-m
 
 # Split and create Pane 4: Install btop
 tmux split-window -v -t "installers:Main.1"
-tmux send-keys -t "installers:Main.3" "echo '=== Installing btop ===' && sudo apt-get install -y btop" C-m
+tmux send-keys -t "installers:Main.3" "if command -v btop &> /dev/null; then echo '=== btop already installed ==='; else echo '=== Installing btop ===' && sudo apt-get install -y btop; fi && echo 'DONE_BTOP' && sleep 2" C-m
 
 # Split and create Pane 5: Install fastfetch
 tmux split-window -v -t "installers:Main.2"
-tmux send-keys -t "installers:Main.4" "echo '=== Installing fastfetch ===' && sudo apt-get install -y fastfetch" C-m
+tmux send-keys -t "installers:Main.4" "if command -v fastfetch &> /dev/null; then echo '=== fastfetch already installed ==='; else echo '=== Installing fastfetch ===' && sudo apt-get install -y fastfetch; fi && echo 'DONE_FASTFETCH' && sleep 2" C-m
 
 # Add fastfetch to bashrc to run on shell startup
 if ! grep -q "fastfetch" ~/.bashrc; then
@@ -38,7 +41,7 @@ fi
 
 # Create GH Auth window
 tmux new-window -t "installers" -n "GH-Auth"
-tmux send-keys -t "installers:GH-Auth" "echo '=== GitHub Authentication ===' && gh auth login" C-m
+tmux send-keys -t "installers:GH-Auth" "if gh auth status &> /dev/null; then echo '=== GitHub already authenticated ==='; else echo '=== GitHub Authentication ===' && gh auth login; fi && echo 'DONE_GH_AUTH' && sleep 2" C-m
 
 # Create proj directory if not exists
 mkdir -p proj
@@ -65,16 +68,16 @@ jq -c '.[]' proj.json | while read -r project; do
   # Create session
   tmux new-session -d -s "$short_name" -n "OCa"
 
-  # OCa pane - opencode
-  tmux send-keys -t "$short_name:OCa" "cd proj/$folder_name && opencode" C-m
+  # OCa pane - opencode (wait for installation to complete)
+  tmux send-keys -t "$short_name:OCa" "cd proj/$folder_name && while ! command -v opencode &> /dev/null; do echo 'Waiting for opencode to install...'; sleep 3; done && opencode" C-m
 
-  # OCb window - opencode
+  # OCb window - opencode (wait for installation to complete)
   tmux new-window -t "$short_name" -n "OCb"
-  tmux send-keys -t "$short_name:OCb" "cd proj/$folder_name && opencode" C-m
+  tmux send-keys -t "$short_name:OCb" "cd proj/$folder_name && while ! command -v opencode &> /dev/null; do echo 'Waiting for opencode to install...'; sleep 3; done && opencode" C-m
 
-  # LG window - lazygit
+  # LG window - lazygit (wait for installation to complete)
   tmux new-window -t "$short_name" -n "LG"
-  tmux send-keys -t "$short_name:LG" "cd proj/$folder_name && lazygit" C-m
+  tmux send-keys -t "$short_name:LG" "cd proj/$folder_name && while ! command -v lazygit &> /dev/null; do echo 'Waiting for lazygit to install...'; sleep 3; done && lazygit" C-m
 
   # Serv window
   tmux new-window -t "$short_name" -n "Serv"
@@ -85,17 +88,17 @@ jq -c '.[]' proj.json | while read -r project; do
   tmux send-keys -t "$short_name:Bash" "cd proj/$folder_name" C-m
 done
 
-# Create general session
+# Create general session (before monitor to ensure it exists)
 tmux new-session -d -s "general" -n "0"
-tmux send-keys -t "general:0" "btop" C-m
+tmux send-keys -t "general:0" "while ! command -v btop &> /dev/null; do echo 'Waiting for btop to install...'; sleep 3; done && btop" C-m
 
-# OCa window - opencode
+# OCa window - opencode (wait for installation to complete)
 tmux new-window -t "general" -n "OCa"
-tmux send-keys -t "general:OCa" "opencode" C-m
+tmux send-keys -t "general:OCa" "while ! command -v opencode &> /dev/null; do echo 'Waiting for opencode to install...'; sleep 3; done && opencode" C-m
 
-# OCb window - opencode
+# OCb window - opencode (wait for installation to complete)
 tmux new-window -t "general" -n "OCb"
-tmux send-keys -t "general:OCb" "opencode" C-m
+tmux send-keys -t "general:OCb" "while ! command -v opencode &> /dev/null; do echo 'Waiting for opencode to install...'; sleep 3; done && opencode" C-m
 
 # BASHa window
 tmux new-window -t "general" -n "BASHa"
@@ -103,5 +106,28 @@ tmux new-window -t "general" -n "BASHa"
 # BASHb window
 tmux new-window -t "general" -n "BASHb"
 
-# Attach to the installers session
-tmux attach-session -t "installers"
+# Create a monitoring window that will wait for all installations to complete and then kill the session
+tmux new-window -t "installers" -n "Monitor"
+tmux send-keys -t "installers:Monitor" "\
+echo 'Waiting for all installations to complete...'; \
+while true; do \
+  if tmux capture-pane -t installers:Main.0 -p | grep -q 'DONE_UPDATE' && \
+     tmux capture-pane -t installers:Main.1 -p | grep -q 'DONE_LAZYGIT' && \
+     tmux capture-pane -t installers:Main.2 -p | grep -q 'DONE_OPENCODE' && \
+     tmux capture-pane -t installers:Main.3 -p | grep -q 'DONE_BTOP' && \
+     tmux capture-pane -t installers:Main.4 -p | grep -q 'DONE_FASTFETCH' && \
+     tmux capture-pane -t installers:GH-Auth -p | grep -q 'DONE_GH_AUTH'; then \
+    echo 'All installations complete! Switching to general session in 3 seconds...'; \
+    sleep 3; \
+    if tmux has-session -t general 2>/dev/null; then \
+      tmux switch-client -t general 2>/dev/null || true; \
+      sleep 1; \
+      tmux run-shell -b 'sleep 1; tmux kill-session -t installers 2>/dev/null'; \
+    fi; \
+    break; \
+  fi; \
+  sleep 3; \
+done" C-m
+
+# Attach to the general session (top window) so user can see it while installations proceed
+tmux attach-session -t "general:0"
