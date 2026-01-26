@@ -12,11 +12,17 @@ Run the setup script:
 
 ## What it does
 
-- Installs lazygit, opencode, and btop
+- Creates a temporary "installers" session that:
+  - Updates and upgrades the system
+  - Checks if tools are already installed to avoid redundant installations
+  - Installs lazygit, opencode-ai, btop, and fastfetch (if not already installed)
+  - Authenticates with GitHub (if not already authenticated)
+  - Automatically monitors installation progress
+  - Self-deletes after all installations complete, switching to the general session
+- Configures tmux to keep window names and adds a tree view shortcut (Ctrl+b w)
 - Creates tmux sessions for each project in `proj.json`
 - Each project session includes: OCa, OCb, LG, Serv, and Bash windows
 - Creates a general session with btop and additional windows
-- Authenticates with GitHub
 
 ## Configuration
 
