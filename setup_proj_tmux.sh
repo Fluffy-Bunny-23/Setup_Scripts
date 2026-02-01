@@ -58,7 +58,11 @@ fi
 tmux new-session -d -s "$GENERAL_SESSION" -n "BTOP"
 tmux send-keys -t "$GENERAL_SESSION:BTOP" "btop" C-m
 
-tmux new-window -t "$GENERAL_SESSION" -n "OC"
+tmux new-window -t "$GENERAL_SESSION" -n "OCa"
+tmux send-keys -t "$GENERAL_SESSION:OC" "cd $WORKSPACE_DIR" C-m
+tmux send-keys -t "$GENERAL_SESSION:OC" "opencode" C-m
+
+tmux new-window -t "$GENERAL_SESSION" -n "OCb"
 tmux send-keys -t "$GENERAL_SESSION:OC" "cd $WORKSPACE_DIR" C-m
 tmux send-keys -t "$GENERAL_SESSION:OC" "opencode" C-m
 
@@ -105,6 +109,7 @@ while IFS=$'\t' read -r folder_name short_name server_cmd; do
     tmux new-window -t "$short_name" -n "Bash"
     tmux send-keys -t "$short_name:Bash" "cd $PROJ_DIR/$folder_name" C-m
     tmux send-keys -t "$short_name:Bash" "clear" C-m
+    
 done < <(jq -r '.[] | [.folder_name, .short_name, (.server_cmd // "")] | @tsv' "$PROJ_FILE")
 
 # Attach to General session
