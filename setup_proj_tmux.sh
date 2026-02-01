@@ -7,6 +7,10 @@ PROJ_DIR="${PROJ_DIR:-${WORKSPACE_DIR}/proj}"
 PROJ_FILE="${PROJ_FILE:-$SCRIPT_DIR/proj.json}"
 GENERAL_SESSION="${GENERAL_SESSION:-General}"
 
+kill_session_if_exists() {
+    tmux has-session -t "$1" 2>/dev/null && tmux kill-session -t "$1"
+}
+
 if ! command -v jq >/dev/null 2>&1; then
     echo "jq is required but not installed. Install it with your system package manager."
     exit 1
@@ -28,9 +32,9 @@ if ! jq -e '.' "$PROJ_FILE" >/dev/null 2>&1; then
 fi
 
 # Kill existing sessions if they exist
-tmux has-session -t "$GENERAL_SESSION" 2>/dev/null && tmux kill-session -t "$GENERAL_SESSION"
+kill_session_if_exists "$GENERAL_SESSION"
 while read -r session; do
-    tmux has-session -t "$session" 2>/dev/null && tmux kill-session -t "$session"
+    kill_session_if_exists "$session"
 done < <(jq -r '.[].short_name' "$PROJ_FILE")
 
 # General session
@@ -77,14 +81,14 @@ while IFS=$'\t' read -r folder_name short_name server_cmd; do
 
     tmux new-window -t "$short_name" -n "Serv"
     tmux send-keys -t "$short_name:Serv" "cd $PROJ_DIR/$folder_name" C-m
-    if [ -n "$server_cmd" ] && [ "$server_cmd" != "null" ]; then
+    if [ -n "$server_cmd" ]; then
         tmux send-keys -t "$short_name:Serv" "$server_cmd" C-m
     fi
 
     tmux new-window -t "$short_name" -n "Bash"
     tmux send-keys -t "$short_name:Bash" "cd $PROJ_DIR/$folder_name" C-m
     tmux send-keys -t "$short_name:Bash" "clear" C-m
-done < <(jq -r '.[] | [.folder_name, .short_name, .server_cmd] | @tsv' "$PROJ_FILE")
+done < <(jq -r '.[] | [.folder_name, .short_name, (.server_cmd // "")] | @tsv' "$PROJ_FILE")
 
 # Attach to General session
 tmux attach-session -t "$GENERAL_SESSION"
