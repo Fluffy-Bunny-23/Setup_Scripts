@@ -7,17 +7,17 @@ PROJ_DIR="${PROJ_DIR:-${WORKSPACE_DIR}/proj}"
 PROJ_FILE="${PROJ_FILE:-$SCRIPT_DIR/proj.json}"
 
 if ! command -v jq >/dev/null 2>&1; then
-    echo "jq is required but not installed."
+    echo "jq is required but not installed. Install it (e.g., sudo apt-get install -y jq)."
     exit 1
 fi
 
 if [ ! -f "$PROJ_FILE" ]; then
-    echo "proj.json not found at $PROJ_FILE."
+    echo "proj.json not found at $PROJ_FILE. Place it there or set PROJ_FILE to a custom path."
     exit 1
 fi
 
 if ! jq -e '.' "$PROJ_FILE" >/dev/null 2>&1; then
-    echo "proj.json is not valid JSON."
+    echo "proj.json is not valid JSON. Try: jq . \"$PROJ_FILE\""
     exit 1
 fi
 
