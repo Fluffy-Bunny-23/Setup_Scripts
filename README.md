@@ -10,6 +10,12 @@ Run the setup script:
 ./setup.sh
 ```
 
+To only create tmux sessions from `proj.json` (assumes tools are already installed):
+
+```bash
+./setup_proj_tmux.sh
+```
+
 ## What it does
 
 - Creates a temporary "installers" session that:
@@ -21,8 +27,8 @@ Run the setup script:
   - Self-deletes after all installations complete, switching to the general session
 - Configures tmux to keep window names and adds a tree view shortcut (Ctrl+b w)
 - Creates tmux sessions for each project in `proj.json`
-- Each project session includes: OCa, OCb, LG, Serv, and Bash windows
-- Creates a general session with btop and additional windows
+- Each project session includes: OCa, OCb, CPa, CPb, LG, Serv, and Bash windows
+- Creates a general session with btop, opencode, and copilot windows
 
 ## Configuration
 
