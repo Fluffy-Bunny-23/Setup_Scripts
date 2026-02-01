@@ -11,13 +11,18 @@ if ! command -v jq >/dev/null 2>&1; then
     exit 1
 fi
 
+if ! command -v tmux >/dev/null 2>&1; then
+    echo "tmux is required but not installed. Install it (e.g., sudo apt-get install -y tmux)."
+    exit 1
+fi
+
 if [ ! -f "$PROJ_FILE" ]; then
-    echo "proj.json not found at $PROJ_FILE. Place it there or set PROJ_FILE to a custom path."
+    echo "File not found at $PROJ_FILE. Place proj.json there or set PROJ_FILE to a custom path."
     exit 1
 fi
 
 if ! jq -e '.' "$PROJ_FILE" >/dev/null 2>&1; then
-    echo "proj.json is not valid JSON. Try: jq . \"$PROJ_FILE\""
+    echo "File at $PROJ_FILE is not valid JSON. Try: jq . \"$PROJ_FILE\""
     exit 1
 fi
 
