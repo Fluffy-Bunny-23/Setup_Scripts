@@ -12,12 +12,12 @@ kill_session_if_exists() {
 }
 
 if ! command -v jq >/dev/null 2>&1; then
-    echo "jq is required but not installed. Install it with your system package manager."
+    echo "jq is required but not installed. Install it (apt-get install jq, brew install jq, etc.)."
     exit 1
 fi
 
 if ! command -v tmux >/dev/null 2>&1; then
-    echo "tmux is required but not installed. Install it with your system package manager."
+    echo "tmux is required but not installed. Install it (apt-get install tmux, brew install tmux, etc.)."
     exit 1
 fi
 
@@ -36,9 +36,23 @@ kill_session_if_exists "$GENERAL_SESSION"
 while read -r session; do
     kill_session_if_exists "$session"
 done < <(jq -r '.[].short_name' "$PROJ_FILE" || {
-    echo "Failed to read sessions from $PROJ_FILE."
+    echo "Failed to read sessions from $PROJ_FILE (missing or invalid short_name fields)."
     exit 1
 })
+
+# Ensure all project directories exist before creating sessions.
+missing_dirs=()
+while IFS=$'\t' read -r folder_name _short_name _server_cmd; do
+    if [ ! -d "$PROJ_DIR/$folder_name" ]; then
+        missing_dirs+=("$PROJ_DIR/$folder_name")
+    fi
+done < <(jq -r '.[] | [.folder_name, .short_name, (.server_cmd // "")] | @tsv' "$PROJ_FILE")
+
+if [ "${#missing_dirs[@]}" -gt 0 ]; then
+    printf "Project directories not found:\n"
+    printf "  %s\n" "${missing_dirs[@]}"
+    exit 1
+fi
 
 # General session
 tmux new-session -d -s "$GENERAL_SESSION" -n "BTOP"
@@ -62,10 +76,6 @@ tmux send-keys -t "$GENERAL_SESSION:Bash" "clear" C-m
 
 # Project sessions
 while IFS=$'\t' read -r folder_name short_name server_cmd; do
-    if [ ! -d "$PROJ_DIR/$folder_name" ]; then
-        echo "Project directory not found: $PROJ_DIR/$folder_name"
-        exit 1
-    fi
     tmux new-session -d -s "$short_name" -n "OCa"
     tmux send-keys -t "$short_name:OCa" "cd $PROJ_DIR/$folder_name" C-m
     tmux send-keys -t "$short_name:OCa" "opencode" C-m
