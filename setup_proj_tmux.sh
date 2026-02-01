@@ -5,14 +5,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR="${WORKSPACE_DIR:-/workspaces}"
 PROJ_DIR="${PROJ_DIR:-${WORKSPACE_DIR}/proj}"
 PROJ_FILE="${PROJ_FILE:-$SCRIPT_DIR/proj.json}"
+GENERAL_SESSION="${GENERAL_SESSION:-General}"
 
 if ! command -v jq >/dev/null 2>&1; then
-    echo "jq is required but not installed. Install it (e.g., sudo apt-get install -y jq)."
+    echo "jq is required but not installed. Install it with your system package manager."
     exit 1
 fi
 
 if ! command -v tmux >/dev/null 2>&1; then
-    echo "tmux is required but not installed. Install it (e.g., sudo apt-get install -y tmux)."
+    echo "tmux is required but not installed. Install it with your system package manager."
     exit 1
 fi
 
@@ -27,30 +28,30 @@ if ! jq -e '.' "$PROJ_FILE" >/dev/null 2>&1; then
 fi
 
 # Kill existing sessions if they exist
-tmux has-session -t General 2>/dev/null && tmux kill-session -t General
+tmux has-session -t "$GENERAL_SESSION" 2>/dev/null && tmux kill-session -t "$GENERAL_SESSION"
 while read -r session; do
     tmux has-session -t "$session" 2>/dev/null && tmux kill-session -t "$session"
 done < <(jq -r '.[].short_name' "$PROJ_FILE")
 
 # General session
-tmux new-session -d -s General -n "BTOP"
-tmux send-keys -t General:BTOP "btop" C-m
+tmux new-session -d -s "$GENERAL_SESSION" -n "BTOP"
+tmux send-keys -t "$GENERAL_SESSION:BTOP" "btop" C-m
 
-tmux new-window -t General -n "OC"
-tmux send-keys -t General:OC "cd $WORKSPACE_DIR" C-m
-tmux send-keys -t General:OC "opencode" C-m
+tmux new-window -t "$GENERAL_SESSION" -n "OC"
+tmux send-keys -t "$GENERAL_SESSION:OC" "cd $WORKSPACE_DIR" C-m
+tmux send-keys -t "$GENERAL_SESSION:OC" "opencode" C-m
 
-tmux new-window -t General -n "CPa"
-tmux send-keys -t General:CPa "cd $WORKSPACE_DIR" C-m
-tmux send-keys -t General:CPa "copilot" C-m
+tmux new-window -t "$GENERAL_SESSION" -n "CPa"
+tmux send-keys -t "$GENERAL_SESSION:CPa" "cd $WORKSPACE_DIR" C-m
+tmux send-keys -t "$GENERAL_SESSION:CPa" "copilot" C-m
 
-tmux new-window -t General -n "CPb"
-tmux send-keys -t General:CPb "cd $WORKSPACE_DIR" C-m
-tmux send-keys -t General:CPb "copilot" C-m
+tmux new-window -t "$GENERAL_SESSION" -n "CPb"
+tmux send-keys -t "$GENERAL_SESSION:CPb" "cd $WORKSPACE_DIR" C-m
+tmux send-keys -t "$GENERAL_SESSION:CPb" "copilot" C-m
 
-tmux new-window -t General -n "Bash"
-tmux send-keys -t General:Bash "cd $WORKSPACE_DIR" C-m
-tmux send-keys -t General:Bash "clear" C-m
+tmux new-window -t "$GENERAL_SESSION" -n "Bash"
+tmux send-keys -t "$GENERAL_SESSION:Bash" "cd $WORKSPACE_DIR" C-m
+tmux send-keys -t "$GENERAL_SESSION:Bash" "clear" C-m
 
 # Project sessions
 while IFS=$'\t' read -r folder_name short_name server_cmd; do
@@ -86,4 +87,4 @@ while IFS=$'\t' read -r folder_name short_name server_cmd; do
 done < <(jq -r '.[] | [.folder_name, .short_name, .server_cmd] | @tsv' "$PROJ_FILE")
 
 # Attach to General session
-tmux attach-session -t General
+tmux attach-session -t "$GENERAL_SESSION"
