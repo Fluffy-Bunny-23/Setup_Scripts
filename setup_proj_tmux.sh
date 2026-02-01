@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 WORKSPACE_DIR="${WORKSPACE_DIR:-/workspaces}"
 PROJ_DIR="${PROJ_DIR:-$WORKSPACE_DIR/proj}"
@@ -20,9 +21,9 @@ fi
 
 # Kill existing sessions if they exist
 tmux has-session -t General 2>/dev/null && tmux kill-session -t General
-jq -r '.[].short_name' proj.json | while read -r session; do
+while read -r session; do
     tmux has-session -t "$session" 2>/dev/null && tmux kill-session -t "$session"
-done
+done < <(jq -r '.[].short_name' proj.json)
 
 # General session
 tmux new-session -d -s General -n "BTOP"
@@ -45,11 +46,7 @@ tmux send-keys -t General:Bash "cd $WORKSPACE_DIR" C-m
 tmux send-keys -t General:Bash "clear" C-m
 
 # Project sessions
-jq -c '.[]' proj.json | while read -r project; do
-    folder_name=$(echo "$project" | jq -r '.folder_name')
-    short_name=$(echo "$project" | jq -r '.short_name')
-    server_cmd=$(echo "$project" | jq -r '.server_cmd')
-
+while IFS=$'\t' read -r folder_name short_name server_cmd; do
     tmux new-session -d -s "$short_name" -n "OCa"
     tmux send-keys -t "$short_name:OCa" "cd $PROJ_DIR/$folder_name" C-m
     tmux send-keys -t "$short_name:OCa" "opencode" C-m
@@ -79,7 +76,7 @@ jq -c '.[]' proj.json | while read -r project; do
     tmux new-window -t "$short_name" -n "Bash"
     tmux send-keys -t "$short_name:Bash" "cd $PROJ_DIR/$folder_name" C-m
     tmux send-keys -t "$short_name:Bash" "clear" C-m
-done
+done < <(jq -r '.[] | [.folder_name, .short_name, .server_cmd] | @tsv' proj.json)
 
 # Attach to General session
 tmux attach-session -t General
