@@ -1,7 +1,7 @@
 #!/bin/bash
 
-WORKSPACE_DIR="/workspaces"
-PROJ_DIR="proj"
+WORKSPACE_DIR="${WORKSPACE_DIR:-/workspaces}"
+PROJ_DIR="${PROJ_DIR:-$WORKSPACE_DIR/proj}"
 
 if ! command -v jq >/dev/null 2>&1; then
     echo "jq is required but not installed."
