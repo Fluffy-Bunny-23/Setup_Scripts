@@ -1,20 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR="${WORKSPACE_DIR:-/workspaces}"
-PROJ_DIR="${PROJ_DIR:-$WORKSPACE_DIR/proj}"
+PROJ_DIR="${PROJ_DIR:-${WORKSPACE_DIR}/proj}"
+PROJ_FILE="${PROJ_FILE:-$SCRIPT_DIR/proj.json}"
 
 if ! command -v jq >/dev/null 2>&1; then
     echo "jq is required but not installed."
     exit 1
 fi
 
-if [ ! -f proj.json ]; then
-    echo "proj.json not found."
+if [ ! -f "$PROJ_FILE" ]; then
+    echo "proj.json not found at $PROJ_FILE."
     exit 1
 fi
 
-if ! jq -e '.' proj.json >/dev/null 2>&1; then
+if ! jq -e '.' "$PROJ_FILE" >/dev/null 2>&1; then
     echo "proj.json is not valid JSON."
     exit 1
 fi
@@ -23,7 +25,7 @@ fi
 tmux has-session -t General 2>/dev/null && tmux kill-session -t General
 while read -r session; do
     tmux has-session -t "$session" 2>/dev/null && tmux kill-session -t "$session"
-done < <(jq -r '.[].short_name' proj.json)
+done < <(jq -r '.[].short_name' "$PROJ_FILE")
 
 # General session
 tmux new-session -d -s General -n "BTOP"
@@ -76,7 +78,7 @@ while IFS=$'\t' read -r folder_name short_name server_cmd; do
     tmux new-window -t "$short_name" -n "Bash"
     tmux send-keys -t "$short_name:Bash" "cd $PROJ_DIR/$folder_name" C-m
     tmux send-keys -t "$short_name:Bash" "clear" C-m
-done < <(jq -r '.[] | [.folder_name, .short_name, .server_cmd] | @tsv' proj.json)
+done < <(jq -r '.[] | [.folder_name, .short_name, .server_cmd] | @tsv' "$PROJ_FILE")
 
 # Attach to General session
 tmux attach-session -t General
