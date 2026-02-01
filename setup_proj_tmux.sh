@@ -35,7 +35,10 @@ fi
 kill_session_if_exists "$GENERAL_SESSION"
 while read -r session; do
     kill_session_if_exists "$session"
-done < <(jq -r '.[].short_name' "$PROJ_FILE")
+done < <(jq -r '.[].short_name' "$PROJ_FILE" || {
+    echo "Failed to read sessions from $PROJ_FILE."
+    exit 1
+})
 
 # General session
 tmux new-session -d -s "$GENERAL_SESSION" -n "BTOP"
@@ -59,6 +62,10 @@ tmux send-keys -t "$GENERAL_SESSION:Bash" "clear" C-m
 
 # Project sessions
 while IFS=$'\t' read -r folder_name short_name server_cmd; do
+    if [ ! -d "$PROJ_DIR/$folder_name" ]; then
+        echo "Project directory not found: $PROJ_DIR/$folder_name"
+        exit 1
+    fi
     tmux new-session -d -s "$short_name" -n "OCa"
     tmux send-keys -t "$short_name:OCa" "cd $PROJ_DIR/$folder_name" C-m
     tmux send-keys -t "$short_name:OCa" "opencode" C-m
