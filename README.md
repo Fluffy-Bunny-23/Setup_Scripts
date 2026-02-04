@@ -39,3 +39,15 @@ Edit `proj.json` to add or modify projects with the following fields:
 - `folder_name`: Directory name in `proj/` folder
 - `short_name`: tmux session name
 - `server_cmd`: Command to run in the Serv window
+
+## Example directory tree
+
+```text
+Setup_Scripts/
+├── proj.json
+├── setup.sh
+├── setup_proj_tmux.sh
+└── proj/
+    ├── Wisher/
+    └── latin-flashcard-trainer/
+```
