@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration - Edit this path as needed
-PROJECT_PATH="coding/proj/galaxyrvr-ctl-web"
+PROJECT_PATH="coding"
 
 # Install Lazygit
 LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*')
@@ -14,6 +14,10 @@ echo "Lazygit Done"
 # Install npm packages
 npm install -g opencode-ai copilot > /dev/null 2>&1
 echo "NPM Packages Done"
+
+# Install apt packages
+sudo apt install ncdu -y > /dev/null 2>&1
+echo "APT Done"
 
 # Install btop
 sudo apt install btop -y > /dev/null 2>&1
