@@ -17,4 +17,7 @@ echo "Btop Done"
 
 # Install Brew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+echo >> /home/zaned31/.bashrc
+echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' >> /home/zaned31/.bashrc
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
 echo "Brew Done"
