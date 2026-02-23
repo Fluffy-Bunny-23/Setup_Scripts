@@ -16,12 +16,8 @@ npm install -g opencode-ai copilot npm install @charmland/crush > /dev/null 2>&1
 echo "NPM Packages Done"
 
 # Install apt packages
-sudo apt install ncdu -y > /dev/null 2>&1
+sudo apt install ncdu btop -y > /dev/null 2>&1
 echo "APT Done"
-
-# Install btop
-sudo apt install btop -y > /dev/null 2>&1
-echo "Btop Done"
 
 # Run SSH setup
 ./ssh.sh
