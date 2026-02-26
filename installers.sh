@@ -9,7 +9,7 @@ rm -rf lazygit lazygit.tar.gz
 echo "Lazygit Done"
 
 # Install npm packages
-npm install -g opencode-ai copilot > /dev/null 2>&1
+npm install -g opencode-ai copilot @charmland/crush > /dev/null 2>&1
 echo "NPM Packages Done"
 
 # Install apt packages
